@@ -1,3 +1,7 @@
+This is a copy of the repo https://github.com/fatih/structs which is no longer being maintained. It has been tweaked
+a little to better support our use case.
+
+
 # Archived project. No maintenance. 
 
 This project is not maintained anymore and is archived. Feel free to fork and
@@ -40,7 +44,6 @@ server := &Server{
 	Enabled: true,
 }
 ```
-
 ```go
 // Convert a struct to a map[string]interface{}
 // => {"Name":"gopher", "ID":123456, "Enabled":true}
@@ -162,8 +165,8 @@ for _, f := range s.Fields() {
 
 ## Credits
 
- * [Fatih Arslan](https://github.com/fatih)
- * [Cihangir Savas](https://github.com/cihangir)
+* [Fatih Arslan](https://github.com/fatih)
+* [Cihangir Savas](https://github.com/cihangir)
 
 ## License
 

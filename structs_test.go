@@ -23,7 +23,7 @@ func TestMapNonStruct(t *testing.T) {
 
 func TestStructIndexes(t *testing.T) {
 	type C struct {
-		something int
+		something int //nolint
 		Props     map[string]interface{}
 	}
 
@@ -263,7 +263,7 @@ func TestMap_Nested(t *testing.T) {
 		t.Error("Map nested structs is not available in the map")
 	}
 
-	if name := in["Name"].(string); name != "example" {
+	if name, _ := in["Name"].(string); name != "example" {
 		t.Errorf("Map nested struct's name field should give example, got: %s", name)
 	}
 }
@@ -296,8 +296,8 @@ func TestMap_NestedMapWithStructValues(t *testing.T) {
 		t.Errorf("Nested type of map should be of type map[string]interface{}, have %T", m["A"])
 	}
 
-	example := in["example_key"].(map[string]interface{})
-	if name := example["Name"].(string); name != "example" {
+	example, _ := in["example_key"].(map[string]interface{})
+	if name, _ := example["Name"].(string); name != "example" {
 		t.Errorf("Map nested struct's name field should give example, got: %s", name)
 	}
 }
@@ -330,7 +330,7 @@ func TestMap_NestedMapWithStringValues(t *testing.T) {
 		t.Errorf("Nested type of map should be of type map[string]interface{}, have %T", m["B"])
 	}
 
-	foo := in["Foo"].(map[string]string)
+	foo, _ := in["Foo"].(map[string]string)
 	if name := foo["example_key"]; name != "example" {
 		t.Errorf("Map nested struct's name field should give example, got: %s", name)
 	}
@@ -363,7 +363,7 @@ func TestMap_NestedMapWithInterfaceValues(t *testing.T) {
 		t.Errorf("Nested type of map should be of type map[string]interface{}, have %T", m["B"])
 	}
 
-	foo := in["Foo"].(map[string]interface{})
+	foo, _ := in["Foo"].(map[string]interface{})
 	if name := foo["example_key"]; name != "example" {
 		t.Errorf("Map nested struct's name field should give example, got: %s", name)
 	}
@@ -397,7 +397,7 @@ func TestMap_NestedMapWithSliceIntValues(t *testing.T) {
 		t.Errorf("Nested type of map should be of type map[string]interface{}, have %T", m["B"])
 	}
 
-	foo := in["Foo"].(map[string][]int)
+	foo, _ := in["Foo"].(map[string][]int)
 	if name := foo["example_key"]; name[0] != 80 {
 		t.Errorf("Map nested struct's name field should give example, got: %v", name)
 	}
@@ -436,9 +436,9 @@ func TestMap_NestedMapWithSliceStructValues(t *testing.T) {
 		t.Errorf("Nested type of map should be of type map[string]interface{}, have %T", m["B"])
 	}
 
-	foo := in["Foo"].(map[string]interface{})
+	foo, _ := in["Foo"].(map[string]interface{})
 
-	addresses := foo["example_key"].([]interface{})
+	addresses, _ := foo["example_key"].([]interface{})
 
 	addr, ok := addresses[0].(map[string]interface{})
 	if !ok {
@@ -469,7 +469,7 @@ func TestMap_NestedSliceWithStructValues(t *testing.T) {
 	}
 	mp := Map(p)
 
-	mpAddresses := mp["addresses"].([]interface{})
+	mpAddresses, _ := mp["addresses"].([]interface{})
 	if _, exists := mpAddresses[0].(map[string]interface{})["Country"]; exists {
 		t.Errorf("Expecting customCountryName, but found Country")
 	}
@@ -498,7 +498,7 @@ func TestMap_NestedSliceWithPointerOfStructValues(t *testing.T) {
 	}
 	mp := Map(p)
 
-	mpAddresses := mp["addresses"].([]interface{})
+	mpAddresses, _ := mp["addresses"].([]interface{})
 	if _, exists := mpAddresses[0].(map[string]interface{})["Country"]; exists {
 		t.Errorf("Expecting customCountryName, but found Country")
 	}
@@ -553,7 +553,7 @@ func TestMap_Anonymous(t *testing.T) {
 		t.Error("Embedded structs is not available in the map")
 	}
 
-	if name := in["Name"].(string); name != "example" {
+	if name, _ := in["Name"].(string); name != "example" {
 		t.Errorf("Embedded A struct's Name field should give example, got: %s", name)
 	}
 }
@@ -612,20 +612,6 @@ func TestMap_FlatnestedOverwrite(t *testing.T) {
 	}
 }
 
-func TestMap_TimeField(t *testing.T) {
-	type A struct {
-		CreatedAt time.Time
-	}
-
-	a := &A{CreatedAt: time.Now().UTC()}
-	m := Map(a)
-
-	_, ok := m["CreatedAt"].(time.Time)
-	if !ok {
-		t.Error("Time field must be final")
-	}
-}
-
 func TestFillMap(t *testing.T) {
 	var T = struct {
 		A string
@@ -637,7 +623,7 @@ func TestFillMap(t *testing.T) {
 		C: true,
 	}
 
-	a := make(map[string]interface{}, 0)
+	a := make(map[string]interface{})
 	FillMap(T, a)
 
 	// we have three fields
@@ -1319,7 +1305,7 @@ func TestTagWithStringOption(t *testing.T) {
 
 	type Address struct {
 		Country string  `json:"country"`
-		Person  *Person `json:"person,string"`
+		Person  *Person `json:"person,string"` //nolint:staticcheck
 	}
 
 	person := &Person{
@@ -1361,7 +1347,7 @@ type Animal struct {
 }
 
 type Dog struct {
-	Animal *Animal `json:"animal,string"`
+	Animal *Animal `json:"animal,string"` //nolint:staticcheck
 }
 
 func TestNonStringerTagWithStringOption(t *testing.T) {
@@ -1450,4 +1436,126 @@ func TestMap_InterfaceTypeWithMapValue(t *testing.T) {
 	}()
 
 	_ = Map(a)
+}
+
+func TestMap_SerializeDateTime(t *testing.T) {
+	type A struct {
+		Name  string
+		Value string
+		Time  time.Time
+	}
+	expectedTime := "2020-10-20T15:10:20Z"
+	actualTime, err := time.Parse(time.RFC3339, expectedTime)
+	if err != nil {
+		t.Fail()
+	}
+	a := A{Time: actualTime.UTC()}
+
+	in := Map(a)
+
+	// Default serializes to RFC3339 string format
+	receivedTime, ok := in["Time"].(string)
+	if !ok {
+		t.Fail()
+	}
+	if expectedTime != receivedTime {
+		t.Fail()
+	}
+}
+
+func TestMap_SerializeDateTimeP(t *testing.T) {
+	type A struct {
+		Name  string
+		Value string
+		Time  *time.Time
+	}
+	expectedTime := "2020-10-20T15:10:20Z"
+	actualTime, err := time.Parse(time.RFC3339, expectedTime)
+	if err != nil {
+		t.Fail()
+	}
+	actualTimeUTC := actualTime.UTC()
+	a := A{Time: &actualTimeUTC}
+
+	in := Map(a)
+
+	// Default serializes to RFC3339 string format
+	receivedTime, ok := in["Time"].(string)
+	if !ok {
+		t.Fail()
+	}
+	if expectedTime != receivedTime {
+		t.Fail()
+	}
+}
+
+func TestMap_SerializeDateTimeFormatted(t *testing.T) {
+	type A struct {
+		Name  string
+		Value string
+		Time  time.Time `structs:"time,format=2006-01-02"`
+	}
+	actualTimeString := "2020-10-20T15:10:20Z"
+	expectedTime := "2020-10-20"
+	actualTime, err := time.Parse(time.RFC3339, actualTimeString)
+	if err != nil {
+		t.Fail()
+	}
+	a := A{Time: actualTime.UTC()}
+
+	in := Map(a)
+
+	// Default serializes to RFC3339 string format, but we override this
+	receivedTime, ok := in["time"].(string)
+	if !ok {
+		t.Fail()
+	}
+
+	if expectedTime != receivedTime {
+		t.Fail()
+	}
+}
+
+func TestMap_SerializeDateTimeFormattedP(t *testing.T) {
+	type A struct {
+		Name  string
+		Value string
+		Time  *time.Time `structs:"time,format=2006-01-02"`
+	}
+	actualTimeString := "2020-10-20T15:10:20Z"
+	expectedTime := "2020-10-20"
+	actualTime, err := time.Parse(time.RFC3339, actualTimeString)
+	if err != nil {
+		t.Fail()
+	}
+
+	actualTimeUTC := actualTime.UTC()
+	a := A{Time: &actualTimeUTC}
+
+	in := Map(a)
+
+	// Default serializes to RFC3339 string format, but we override this
+	receivedTime, ok := in["time"].(string)
+	if !ok {
+		t.Fail()
+	}
+	if expectedTime != receivedTime {
+		t.Fail()
+	}
+}
+
+func TestMap_SerializeDateTimeFormattedPNil(t *testing.T) {
+	type A struct {
+		Name  string
+		Value string
+		Time  *time.Time `structs:"time,format=2006-01-02"`
+	}
+	a := A{Time: nil}
+
+	in := Map(a)
+
+	_, ok := in["time"]
+	if !ok {
+		t.Fail()
+	}
 }
